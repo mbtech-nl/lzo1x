@@ -1,0 +1,8 @@
+{
+  "extends": "@mbtech-nl/tsconfig/node",
+  "compilerOptions": {
+    "rootDir": "src",
+    "noEmit": true
+  },
+  "include": ["src"]
+}
