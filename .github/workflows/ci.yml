@@ -8,9 +8,13 @@ on:
 
 jobs:
   ci:
-    name: typecheck, lint, build, oracle, coverage
+    name: CI (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22', '24']
 
     steps:
       - uses: actions/checkout@v6
@@ -21,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
           cache: pnpm
 
       - name: Install dependencies
@@ -40,13 +44,18 @@ jobs:
         run: pnpm typecheck
 
       - name: Lint
+        if: matrix.node == '24'
         run: pnpm lint
+
+      - name: Format check
+        if: matrix.node == '24'
+        run: pnpm exec prettier --check src README.md
 
       - name: Test with coverage (incl. ~2050-payload miniLZO oracle)
         run: pnpm test:coverage
 
       - name: Upload coverage to Codecov
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && matrix.node == '24' }}
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
