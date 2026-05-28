@@ -59,8 +59,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint src",
-    "format": "prettier --write src",
-    "prepublishOnly": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "format": "prettier --write src"
   },
   "devDependencies": {
     "@mbtech-nl/eslint-config": "^1.0.1",
