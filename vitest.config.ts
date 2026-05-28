@@ -9,14 +9,15 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       exclude: ['src/**/__tests__/**', 'src/**/*.test.ts', 'src/**/*.d.ts', 'src/index.ts'],
       thresholds: {
-        // The encoder contains format-dictated branches our greedy single-pass matcher
-        // never reaches (M1 2-byte matches, M1-long-distance, M4 length ladder). We keep
-        // the code for spec completeness rather than delete and re-derive on a future
-        // matcher upgrade. Thresholds are calibrated to actual reachability + 1-2%.
-        lines: 85,
-        functions: 95,
-        branches: 75,
-        statements: 85,
+        // The encoder's M1 (2-byte match) branch and the post-match defensive validation
+        // fallback are unreachable from the current matcher and marked /* v8 ignore */
+        // with explanatory comments. Remaining branch gap is mostly OR short-circuits in
+        // the validity-filter expressions. Thresholds give a small buffer above current
+        // numbers so genuine regressions trip CI.
+        lines: 98,
+        functions: 100,
+        branches: 85,
+        statements: 98,
       },
     },
   },

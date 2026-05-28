@@ -79,8 +79,12 @@ export function lzo1xCompress(input: Uint8Array): Uint8Array {
   // trailing literals; the caller does that on the NEXT emitLiteralRun call (the low 2 bits
   // of the token reserve room for that "state").
   const emitMatch = (matchLen: number, matchOff: number, litLen: number): void => {
+    // M1 (matchLen === 2) is unreachable from our matcher: the inner loop only triggers
+    // when 3 source bytes already match, so matchLen is always >= 3 when emitMatch is
+    // called. Kept for spec completeness in case a future matcher variant emits 2-byte
+    // matches; the validation filter above also rejects them defensively.
+    /* v8 ignore next 5 */
     if (matchLen === 2) {
-      // M1: 2-byte match, distance ≤ M1_MAX_OFFSET. Only valid when litLen >= 4 and offset > 0.
       const off = matchOff - 1;
       out[op++] = ((off & 0x3) << 2) & 0xff;
       out[op++] = (off >>> 2) & 0xff;
@@ -162,6 +166,8 @@ export function lzo1xCompress(input: Uint8Array): Uint8Array {
     // baked into emitMatch's branches.
     if (matchLen > 0) {
       const litLen = ip - litStart;
+      // validM1 (2-byte match) is structurally false here — the matcher only sets matchLen
+      // when 3 source bytes match, so matchLen >= 3 always. Kept as a defensive guard.
       const validM1 =
         matchLen === 2 && matchOff <= M1_MAX_OFFSET && litLen >= 4 && !firstFrame;
       const validM2 = matchLen >= 3 && matchLen <= M2_MAX_LEN && matchOff <= M2_MAX_OFFSET;
@@ -173,6 +179,10 @@ export function lzo1xCompress(input: Uint8Array): Uint8Array {
       const validM3 = matchLen >= 3 && matchOff <= M3_MAX_OFFSET;
       const validM4 = matchLen >= 3 && matchOff <= M4_MAX_OFFSET;
 
+      // Defensive rejection of out-of-spec matches; the matcher above never produces any
+      // (every match it emits is at least 3 bytes long and within M4 distance), so this
+      // branch is unreachable from the current matcher.
+      /* v8 ignore next 3 */
       if (!(validM1 || validM2 || validM1Long || validM3 || validM4)) {
         matchLen = 0;
       }

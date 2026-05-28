@@ -1,8 +1,8 @@
-# @mbtech-nl/lzo1x
+# lzo1x
 
 [![CI](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml/badge.svg)](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/mbtech-nl/lzo1x/branch/main/graph/badge.svg)](https://codecov.io/gh/mbtech-nl/lzo1x)
-[![npm](https://img.shields.io/npm/v/@mbtech-nl/lzo1x.svg)](https://www.npmjs.com/package/@mbtech-nl/lzo1x)
+[![npm](https://img.shields.io/npm/v/lzo1x.svg)](https://www.npmjs.com/package/lzo1x)
 
 Pure-TypeScript, MIT-licensed, clean-room implementation of **LZO1X-1** compression and decompression. Isomorphic (Node + modern browsers), zero runtime dependencies, ESM-only.
 
@@ -21,13 +21,13 @@ When you should pick `lzo` instead: you're Node-only, GPL is fine, you need LZO1
 ## Install
 
 ```bash
-pnpm add @mbtech-nl/lzo1x
+pnpm add lzo1x
 ```
 
 ## API
 
 ```ts
-import { lzo1xCompress, lzo1xDecompress } from '@mbtech-nl/lzo1x';
+import { lzo1xCompress, lzo1xDecompress } from 'lzo1x';
 
 const compressed = lzo1xCompress(input); // Uint8Array → Uint8Array
 const restored = lzo1xDecompress(compressed); // dynamic-grow
@@ -99,6 +99,10 @@ Five test streets under `src/__tests__/`:
 3. `oracle-minilzo.test.ts` — Cross-validates against the native `lzo` npm binding (miniLZO) over **~2050 payloads** in both directions: random-LCG sweeps across 9 size bands, whitened high-entropy inputs, single-byte runs for every byte value, short repeating patterns, small-alphabet text-like data, sparse-zeros mixes, and hand-picked inputs that force decoder-only token paths. Runs in CI on every push; locally self-skips if the binding fails to build.
 4. `captured-frames.test.ts` — Real on-the-wire LZO frames captured from a Niimbot B2 Pro printer over BLE. Self-skips if the research path is absent.
 5. `api.test.ts` — Error semantics, worst-case size bound.
+
+## Prior art
+
+Other browser-capable peers: [`lzo-wasm`](https://github.com/tidepool-org/lzo-wasm) (WASM, decompress-only, BSD-2 wrapping LGPL-3 FFmpeg code) and [`lzo-ts`](https://github.com/thaumictom/lzo-ts) (TS port of `minilzo-js`, GPL-3.0, compress + decompress).
 
 ## Licence
 

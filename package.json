@@ -1,5 +1,5 @@
 {
-  "name": "@mbtech-nl/lzo1x",
+  "name": "lzo1x",
   "version": "0.1.0",
   "description": "Pure-TypeScript clean-room implementation of LZO1X-1 compression and decompression, isomorphic (Node + browser)",
   "keywords": [
@@ -41,9 +41,6 @@
     "LICENSE"
   ],
   "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "prettier": "@mbtech-nl/prettier-config",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
