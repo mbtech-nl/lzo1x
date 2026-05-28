@@ -36,7 +36,7 @@ export async function loadMiniLzo(): Promise<{
       decompress: (b: Buffer, n: number) => Buffer;
     };
     return {
-      compress: (buf) => new Uint8Array(mod.compress(Buffer.from(buf))),
+      compress: buf => new Uint8Array(mod.compress(Buffer.from(buf))),
       decompress: (buf, length) => new Uint8Array(mod.decompress(Buffer.from(buf), length)),
     };
   } catch {

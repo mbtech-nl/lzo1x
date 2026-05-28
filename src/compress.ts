@@ -168,8 +168,7 @@ export function lzo1xCompress(input: Uint8Array): Uint8Array {
       const litLen = ip - litStart;
       // validM1 (2-byte match) is structurally false here — the matcher only sets matchLen
       // when 3 source bytes match, so matchLen >= 3 always. Kept as a defensive guard.
-      const validM1 =
-        matchLen === 2 && matchOff <= M1_MAX_OFFSET && litLen >= 4 && !firstFrame;
+      const validM1 = matchLen === 2 && matchOff <= M1_MAX_OFFSET && litLen >= 4 && !firstFrame;
       const validM2 = matchLen >= 3 && matchLen <= M2_MAX_LEN && matchOff <= M2_MAX_OFFSET;
       const validM1Long =
         matchLen === 3 &&
