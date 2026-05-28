@@ -8,20 +8,20 @@ on:
 
 jobs:
   ci:
-    name: typecheck, lint, build, oracle
+    name: typecheck, lint, build, oracle, coverage
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: '20'
           cache: pnpm
 
       - name: Install dependencies
@@ -42,8 +42,16 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test (incl. ~2050-payload miniLZO oracle)
-        run: pnpm test
+      - name: Test with coverage (incl. ~2050-payload miniLZO oracle)
+        run: pnpm test:coverage
+
+      - name: Upload coverage to Codecov
+        if: ${{ github.event_name == 'push' }}
+        uses: codecov/codecov-action@v6
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
 
       - name: Build
         run: pnpm build

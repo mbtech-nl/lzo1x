@@ -1,8 +1,22 @@
 # @mbtech-nl/lzo1x
 
 [![CI](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml/badge.svg)](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/mbtech-nl/lzo1x/branch/main/graph/badge.svg)](https://codecov.io/gh/mbtech-nl/lzo1x)
+[![npm](https://img.shields.io/npm/v/@mbtech-nl/lzo1x.svg)](https://www.npmjs.com/package/@mbtech-nl/lzo1x)
 
 Pure-TypeScript, MIT-licensed, clean-room implementation of **LZO1X-1** compression and decompression. Isomorphic (Node + modern browsers), zero runtime dependencies, ESM-only.
+
+## Why this over `lzo` / miniLZO?
+
+The canonical option for LZO in Node is the [`lzo`](https://www.npmjs.com/package/lzo) npm package, which wraps the C miniLZO library via `node-gyp`. It's fast and battle-tested — but:
+
+- **License.** miniLZO (and the `lzo` binding) is GPLv2. That is a hard non-starter for a lot of commercial codebases. This package is MIT, clean-room from the public LZO1X-1 stream spec.
+- **Runtime reach.** Native bindings only work on Node, only on platforms with a working compiler toolchain, and only after a successful `node-gyp` build. This package is pure TypeScript — runs in browsers, Cloudflare Workers, Deno, Bun, Electron renderers, and any Node version without rebuilds.
+- **Install footprint.** Zero runtime dependencies, no compile step, no postinstall script, no prebuilt-binary download dance. Just code.
+- **Types.** Ships its own `.d.ts`. No `@types/lzo` shim required.
+- **Conformity.** Every release is cross-validated against the actual miniLZO binding over ~2050 payloads in both directions (see [Testing](#testing)). If `lzo` accepts it, so do we; if we produce it, `lzo` decompresses it.
+
+When you should pick `lzo` instead: you're Node-only, GPL is fine, you need LZO1X-999 / LZO1Y / LZO1Z, or you're moving multi-GB/s of data and the ~10× speed gap of native C over JS matters more than reach.
 
 ## Install
 
@@ -15,9 +29,9 @@ pnpm add @mbtech-nl/lzo1x
 ```ts
 import { lzo1xCompress, lzo1xDecompress } from '@mbtech-nl/lzo1x';
 
-const compressed = lzo1xCompress(input);                 // Uint8Array → Uint8Array
-const restored   = lzo1xDecompress(compressed);          // dynamic-grow
-const restored2  = lzo1xDecompress(compressed, input.length); // pre-sized, throws RangeError on mismatch
+const compressed = lzo1xCompress(input); // Uint8Array → Uint8Array
+const restored = lzo1xDecompress(compressed); // dynamic-grow
+const restored2 = lzo1xDecompress(compressed, input.length); // pre-sized, throws RangeError on mismatch
 ```
 
 That is the entire library. No streaming, no async, no LZO1Y/LZO1Z, no LZO1X-999.
@@ -34,14 +48,14 @@ The stream is a sequence of **(literal-run, match)** pairs, driven by a single t
 
 The token's high bits select the encoding family:
 
-| Token range | Family | Encoding |
-| --- | --- | --- |
-| `0..15`         | (after-match) literal-only top-up — see below |
+| Token range     | Family                                                               | Encoding |
+| --------------- | -------------------------------------------------------------------- | -------- |
+| `0..15`         | (after-match) literal-only top-up — see below                        |
 | `0..15` (first) | First-frame long literal — `t < 16` triggers extended literal-length |
-| `16..63`        | **M4** — long match (≥ 9 bytes from a far distance) |
-| `64..127`       | **M1** — 2-byte literal-distance match, len = 3..4 |
-| `128..191`      | **M2** — short match, len = 3..4, distance ≤ 2048 |
-| `192..255`      | **M3** — len 3..8, distance ≤ 2048 |
+| `16..63`        | **M4** — long match (≥ 9 bytes from a far distance)                  |
+| `64..127`       | **M1** — 2-byte literal-distance match, len = 3..4                   |
+| `128..191`      | **M2** — short match, len = 3..4, distance ≤ 2048                    |
+| `192..255`      | **M3** — len 3..8, distance ≤ 2048                                   |
 
 (The "M1..M4" naming is the canonical LZO1X terminology.)
 
