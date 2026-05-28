@@ -1,6 +1,6 @@
 {
   "name": "lzo1x",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Pure-TypeScript clean-room implementation of LZO1X-1 compression and decompression, isomorphic (Node + browser)",
   "keywords": [
     "lzo",
