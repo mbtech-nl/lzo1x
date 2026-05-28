@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: typecheck, lint, build, oracle
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build miniLZO native binding (oracle)
+        # pnpm 9 doesn't auto-trigger node-gyp builds on first install even with
+        # `pnpm.onlyBuiltDependencies`; an explicit rebuild is the reliable path.
+        # The require() check below hard-fails CI if the binding didn't link,
+        # so the oracle can't silently skip — that's the whole conformity claim.
+        run: |
+          pnpm rebuild lzo
+          node -e "require('lzo'); console.log('miniLZO binding OK')"
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test (incl. ~2050-payload miniLZO oracle)
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

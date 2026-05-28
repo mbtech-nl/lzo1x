@@ -51,6 +51,11 @@
   "optionalDependencies": {
     "lzo": "^0.4.11"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "lzo"
+    ]
+  },
   "funding": [
     {
       "type": "github",

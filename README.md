@@ -1,5 +1,7 @@
 # @mbtech-nl/lzo1x
 
+[![CI](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml/badge.svg)](https://github.com/mbtech-nl/lzo1x/actions/workflows/ci.yml)
+
 Pure-TypeScript, MIT-licensed, clean-room implementation of **LZO1X-1** compression and decompression. Isomorphic (Node + modern browsers), zero runtime dependencies, ESM-only.
 
 ## Install
@@ -62,7 +64,7 @@ The very first token has no preceding match. If it is `< 16` it encodes the lead
 ## Implementation notes
 
 - Compressor is the **LZO1X-1** variant (canonical "fast" mode): a single-pass greedy matcher with a **13-bit (8192-slot) hash table** keyed on 4 input bytes. This is what the spec calls a "64 KB working set" — the 64 KB is the match-distance window, not the table size.
-- The hash function is `((b[i]*2654435761) >>> (32-13)) & 0x1FFF` (Knuth multiplicative hash, identical formula to what lzokay uses; rediscovered independently first, then cross-checked).
+- The hash function is `((b[i]*2654435761) >>> (32-13)) & 0x1FFF` (Knuth multiplicative hash).
 - Minimum match length is **3** bytes. Below that, we emit literals.
 - The "trailing literals" rule: the last `M2_MAX_LEN + 5` (≈ 20) bytes of input are always emitted as literals, never as the tail of a match. This keeps the decoder's wildcopy safe.
 
@@ -80,12 +82,10 @@ Five test streets under `src/__tests__/`:
 
 1. `format.test.ts` — Hand-crafted inputs that exercise every M1/M2/M3/M4 path and the length ladders.
 2. `roundtrip.test.ts` — Deterministic-RNG inputs at 1, 16, 256, 4096, 65535, 131072 bytes; `decompress(compress(x)) === x`.
-3. `oracle-minilzo.test.ts` — Cross-validates against the native `lzo` npm binding (miniLZO). Self-skips if the binding fails to load.
+3. `oracle-minilzo.test.ts` — Cross-validates against the native `lzo` npm binding (miniLZO) over **~2050 payloads** in both directions: random-LCG sweeps across 9 size bands, whitened high-entropy inputs, single-byte runs for every byte value, short repeating patterns, small-alphabet text-like data, sparse-zeros mixes, and hand-picked inputs that force decoder-only token paths. Runs in CI on every push; locally self-skips if the binding fails to build.
 4. `captured-frames.test.ts` — Real on-the-wire LZO frames captured from a Niimbot B2 Pro printer over BLE. Self-skips if the research path is absent.
 5. `api.test.ts` — Error semantics, worst-case size bound.
 
 ## Licence
 
 MIT — see [`LICENSE`](./LICENSE).
-
-The implementation was written from the public LZO1X format description, with occasional cross-checks against the MIT-licensed [`lzokay`](https://github.com/jackoalan/lzokay) for tricky edge cases. miniLZO (GPL-2.0+) was deliberately **not** consulted as a source-of-truth to keep this package's licence clean for downstream consumers.
